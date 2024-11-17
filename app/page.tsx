@@ -1,25 +1,22 @@
 "use client";
 
+import Navigationbar from "@/components/Navigationbar";
 import { useSession, signIn, signOut } from "next-auth/react";
+import Image from "next/image";
+import { Fragment } from "react";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
 
   if (status === "loading") return <p>Loading...</p>;
-
-  if (!session) {
-    return (
-      <div>
-        <p>You are not signed in</p>
-        <button onClick={() => signIn("spotify")}>Sign In with Spotify</button>
-      </div>
-    );
-  }
-
+ 
   return (
-    <div>
-      <p>Welcome, {session.user?.name}</p>
-      <button onClick={() => signOut()}>Sign Out</button>
-    </div>
+    <Fragment>
+      <div className="w-full h-screen bg-green-500 ">
+        {/* //Navigationbar */}
+        <Navigationbar />
+        {/* herosection */}
+      </div>
+    </Fragment>
   );
 }

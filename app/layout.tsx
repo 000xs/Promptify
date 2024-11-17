@@ -13,6 +13,11 @@ const geistMono = localFont({
   variable: "--font-geist-mono",
   weight: "100 900",
 });
+const spotiSans = localFont({
+  src: "./fonts/spotify/SpotifyMix-Regular.woff",
+  variable: "--font-spoti-sans",
+  weight: "100 900",
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
