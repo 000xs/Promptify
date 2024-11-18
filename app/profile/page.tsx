@@ -15,6 +15,7 @@ function page() {
     <Fragment>
       <Navigationbar />
       <h1>welcome, {session?.user?.name}</h1>
+      <p>{session?.accessToken}</p>
     </Fragment>
   );
 }

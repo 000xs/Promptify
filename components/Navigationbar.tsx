@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 function Navigationbar() {
   const [popup, setPopup] = useState(false);
   const { data: session, status } = useSession();
+  const sgin = () => signIn();
 
   return (
     <div className="bg-transparent font-[var(--font-spoti-sans)] relative flex items-center justify-between flex-row px-24 py-6">
@@ -62,7 +63,7 @@ function Navigationbar() {
             </ul>
           ) : (
             <button
-              onClick={signIn}
+              onClick={sgin}
               className="px-4 py-2 text-md border  border-black"
             >
               SignUp
