@@ -37,73 +37,161 @@ export async function POST(req: Request) {
     }
 
     const prompt = `
-    You are a highly intelligent music assistant specializing in music categorization and playlist creation. Your goal is to generate accurate music genres that perfectly align with the user's mood.
-    
+    system message: You are a highly intelligent music assistant specializing in music categorization and playlist creation. Your goal is to generate accurate music genres that perfectly align with the user's mood.
+
     Mood: "${body.mood}"
-    
+
     Output:
     1. List the top 10 most relevant music genres for the mood, ordered by relevance.
-    2. For each genre, provide a brief description explaining why it suits the mood.
-    3. Suggest an example artist or song for each genre.
-    4. always format genre name between **genrename**.
-    5. always output genre name clear **between nor numbers,symbol leters (ex:- **Acoustic**)**.
+    2. always should list minimuem 5 genres.
+    3. Always format genre names between **double asterisks** (e.g., **GenreName**).
+    4. Ensure that genre names are clear and formatted without numbers or symbols (e.g., **Acoustic**).
+    5. Output the genres in a numbered list.
+    6. Provide the genres' syntax/spelling as a list of strings.
+    7. I have provided a list of genres as an array. Please find each specified genre within this array and return its index. If a genre is not found, return -1.
     
-    Genres:
-    1. Acoustic
-    2. Afrobeat
-    3. Alt-Rock
-    4. Alternative
-    5. Ambient
-    6. Anime
-    7. Blues
-    8. Bossanova
-    9. Brazilian
-    10. Chill
-    11. Classical
-    12. Comedy
-    13. Country
-    14. Dance
-    15. Dancehall
-    16. Death-Metal
-    17. Disco
-    18. Drum-and-Bass
-    19. Dubstep
-    20. EDM
-    21. Electronic
-    22. Folk
-    23. Funk
-    24. Garage
-    25. German
-    26. Grunge
-    27. Hip-Hop
-    28. House
-    29. Indie-Pop
-    30. Industrial
-    31. Jazz
-    32. K-Pop
-    33. Metal
-    34. Mood
-    35. Morning
-    36. MPB (Música Popular Brasileira)
-    37. Party
-    38. Pop
-    39. Punk
-    40. R&B
-    41. Reggae
-    42. Rock
-    43. Soul
-    44. Spanish
-    45. Summer
-    46. Trap
-    47. Workout
-    `;
+    Output Format :
+      ##array_index1##: **GenreName1**
+      ##array_index2##: **GenreName2**,
+      .... : ......
 
+    Genres list:  [
+      "acoustic",
+      "afrobeat",
+      "alt-rock",
+      "alternative",
+      "ambient",
+      "anime",
+      "black-metal",
+      "bluegrass",
+      "blues",
+      "bossanova",
+      "brazil",
+      "breakbeat",
+      "british",
+      "cantopop",
+      "chicago-house",
+      "children",
+      "chill",
+      "classical",
+      "club",
+      "comedy",
+      "country",
+      "dance",
+      "dancehall",
+      "death-metal",
+      "deep-house",
+      "detroit-techno",
+      "disco",
+      "disney",
+      "drum-and-bass",
+      "dub",
+      "dubstep",
+      "edm",
+      "electro",
+      "electronic",
+      "emo",
+      "folk",
+      "forro",
+      "french",
+      "funk",
+      "garage",
+      "german",
+      "gospel",
+      "goth",
+      "grindcore",
+      "groove",
+      "grunge",
+      "guitar",
+      "happy",
+      "hard-rock",
+      "hardcore",
+      "hardstyle",
+      "heavy-metal",
+      "hip-hop",
+      "holidays",
+      "honky-tonk",
+      "house",
+      "idm",
+      "indian",
+      "indie",
+      "indie-pop",
+      "industrial",
+      "iranian",
+      "j-dance",
+      "j-idol",
+      "j-pop",
+      "j-rock",
+      "jazz",
+      "k-pop",
+      "kids",
+      "latin",
+      "latino",
+      "malay",
+      "mandopop",
+      "metal",
+      "metal-misc",
+      "metalcore",
+      "minimal-techno",
+      "movies",
+      "mpb",
+      "new-age",
+      "new-release",
+      "opera",
+      "pagode",
+      "party",
+      "philippines-opm",
+      "piano",
+      "pop",
+      "pop-film",
+      "post-dubstep",
+      "power-pop",
+      "progressive-house",
+      "psych-rock",
+      "punk",
+      "punk-rock",
+      "r-n-b",
+      "rainy-day",
+      "reggae",
+      "reggaeton",
+      "road-trip",
+      "rock",
+      "rock-n-roll",
+      "rockabilly",
+      "romance",
+      "sad",
+      "salsa",
+      "samba",
+      "sertanejo",
+      "show-tunes",
+      "singer-songwriter",
+      "ska",
+      "sleep",
+      "songwriter",
+      "soul",
+      "soundtracks",
+      "spanish",
+      "study",
+      "summer",
+      "swedish",
+      "synth-pop",
+      "tango",
+      "techno",
+      "trance",
+      "trip-hop",
+      "turkish",
+      "work-out",
+      "world-music",
+    ];
+    
+`;
     const result = await geminiModel.generateContent(prompt);
     // Example usage:
 
     if (result?.response?.candidates?.[0]?.content?.parts?.[0]?.text) {
       const playlistSuggestions =
         result.response.candidates[0].content.parts[0].text;
+      console.log(playlistSuggestions);
       const returnData = String(playlistSuggestions);
       const genres = extractBoldText(returnData);
       return NextResponse.json({ genres });

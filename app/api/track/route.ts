@@ -53,7 +53,7 @@ export async function POST(req: Request) {
           params: params,
       });
 
-      console.log("Response data:", response.data); // Log full response data
+      // console.log("Response data:", response.data); // Log full response data
 
       // Return only the tracks array
       return response.data.tracks.items.map(tracks => ({
