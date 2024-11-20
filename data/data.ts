@@ -126,3 +126,6 @@ const genres = [
   "work-out",
   "world-music",
 ];
+
+
+export { genres  };
