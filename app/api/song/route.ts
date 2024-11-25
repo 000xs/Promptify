@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
-import { genres } from "@/data/data";
+import { availableGenres } from "@/data/data";
 
 dotenv.config();
 
@@ -37,23 +37,24 @@ export async function POST(req: Request) {
       );
     }
     const prompt = `
-system message: You are a highly intelligent music assistant specializing in music categorization and playlist creation. Your goal is to generate accurate music genres that perfectly align with the user's mood.
+    system message: You are a highly intelligent music assistant specializing in music categorization and playlist creation. Your goal is to generate accurate music genres that perfectly align with the user's mood.
 
-Mood: "${body.mood}"
-
-Output:
-1. List the top 10 most relevant music genres for the mood, ordered by relevance.
-2. always should list minimuem 5 genres.
-3. Always format genre names between **double asterisks** (e.g., **GenreName**).
-4. Ensure that genre names are clear and formatted without numbers or symbols (e.g., **Acoustic**).
-5. Output the genres in a numbered list.
-6. Provide the genres' syntax/spelling as a list of strings.
-7. I have provided a list of genres as an array. Please find each specified genre within this array and return its index. If a genre is not found, return -1.
-
-Output Format :
-  ##array_index1##: **GenreName1**
-  ##array_index2##: **GenreName2**,
-  .... : ......
+    Mood: "${body.mood}"
+    
+    Output:
+    1. List the top 1 most relevant music genre for the mood, ordered by relevance.
+    2. Always list a minimum of 1 genre.
+    3. Format genre names between **double asterisks** (e.g., **GenreName**).
+    4. Ensure that genre names are clear and formatted without numbers or symbols (e.g., **Acoustic**).
+    5. Output the genre in a numbered list.
+    6. Provide the genre's syntax/spelling as a list of strings.
+    7. I have provided a list of genres as an array. Please find each specified genre within this array and return its index. If a genre is not found, return -1.
+    8. In between %% add a unique search query (e.g., %%query%%).
+    
+    Output Format:
+      %%search_query%%
+      ##array_index##: **GenreName** 
+ 
 
 Genres list:  [
   0 "acoustic",
@@ -196,8 +197,11 @@ Genres list:  [
       const returnData = String(playlistSuggestions);
       const genres = genreTrim(returnData);
       const indexs = indexTrim(returnData);
+      const query = queryTrim(returnData);
+
       const realData = arrData(indexs);
-      return NextResponse.json({ genres, indexs, realData });
+
+      return NextResponse.json({ genres, indexs, realData, query });
     }
 
     throw new Error("Unexpected response structure from Gemini AI.");
@@ -224,6 +228,7 @@ function genreTrim(input: string): string[] {
 
   return matches; // Return the array of matches
 }
+
 function indexTrim(input: string): string[] {
   const regex = /\#\#(.*?)\#\#/g; // Regular expression to match text between double asterisks
   const matches: string[] = [];
@@ -236,55 +241,22 @@ function indexTrim(input: string): string[] {
 
   return matches; // Return the array of matches
 }
+function queryTrim(input: string): string[] {
+  const regex = /\%\%(.*?)\%\%/g; // Regular expression to match text between double asterisks
+  const matches: string[] = [];
+  let match;
 
-const arrData = (index: string[]) :string[] => {
-  const arr : string[] = [];
+  // Loop through all matches in the input string
+  while ((match = regex.exec(input)) !== null) {
+    matches.push(match[1]); // Push the captured group (text between asterisks) to the array
+  }
+
+  return matches; // Return the array of matches
+}
+const arrData = (index: string[]): string[] => {
+  const arr: string[] = [];
   for (let i = -1; i < index.length; i++) {
-    arr.push(genres[Number(index[i])]);
+    arr.push(availableGenres[Number(index[i])]);
   }
   return arr;
 };
-
-// const generateTrack = async (
-//   genre: string,
-//   languageKeyword: string,
-//   limit: number,
-//   accessToken: string
-// ) => {
-//   const apiUrl = `https://api.spotify.com/v1/search?q=genre:${encodeURIComponent(
-//     genre
-//   )}%20AND%20${encodeURIComponent(languageKeyword)}&type=track&limit=${limit}`;
-
-//   console.log("Generated API URL:", apiUrl);
-
-//   try {
-//     const response = await fetch(apiUrl, {
-//       method: "GET",
-//       headers: {
-//         Authorization: `Bearer ${accessToken}`,
-//         "Content-Type": "application/json",
-//       },
-//     });
-
-//     if (!response.ok) {
-//       throw new Error(
-//         `Spotify API error: ${response.status} ${response.statusText}`
-//       );
-//     }
-
-//     const data = await response.json();
-//     console.log("Tracks:", data.tracks.items);
-//     return data.tracks.items; // Return the tracks for further processing
-//   } catch (error) {
-//     console.error("Error fetching tracks:", error);
-//     return null;
-//   }
-// };
-
-// // Usage Example
-// const genre = "pop";
-// const languageKeyword = "español";
-// const limit = 10;
-// const accessToken = "your_access_token_here";
-
-// generateTrack(genre, languageKeyword, limit, accessToken);

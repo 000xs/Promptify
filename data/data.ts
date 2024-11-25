@@ -1,4 +1,4 @@
-const genres = [
+const availableGenres = [
   "acoustic",
   "afrobeat",
   "alt-rock",
@@ -128,4 +128,4 @@ const genres = [
 ];
 
 
-export { genres  };
+export { availableGenres };

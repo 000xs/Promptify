@@ -1,14 +1,15 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import SpotifyProvider from "next-auth/providers/spotify";
 import { JWT } from "next-auth/jwt";
+const SCOPES =
+  "playlist-modify-public playlist-modify-private user-read-private";
 
 export const authOptions: NextAuthOptions = {
   providers: [
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT_ID!,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
-      authorization:
-        "https://accounts.spotify.com/authorize?scope=playlist-modify-public",
+      authorization: `https://accounts.spotify.com/authorize?scope=${SCOPES}`,
     }),
   ],
   callbacks: {
