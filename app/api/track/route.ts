@@ -4,7 +4,6 @@ import { availableGenres } from "@/data/data"; // Assuming this exports an array
 
 export async function POST(req: Request) {
   const body = await req.json();
-
   try {
     const tracks = await searchSpotifyGenres(
       body.token,

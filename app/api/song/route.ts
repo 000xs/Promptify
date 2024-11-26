@@ -12,7 +12,6 @@ if (!geminiApiKey) {
     "GEMINI_API_KEY is not defined in your environment variables."
   );
 }
-
 const googleAI = new GoogleGenerativeAI(geminiApiKey);
 
 const geminiConfig = {

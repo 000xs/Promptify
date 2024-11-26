@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const { userAccessToken, playlistId, trackUri } = body;
+    const { userAccessToken, playlistId, tracks } = body;
 
     // Validate inputs
     if (
@@ -23,8 +23,7 @@ export async function POST(req: NextRequest) {
       typeof userAccessToken !== "string" ||
       !playlistId ||
       typeof playlistId !== "string" ||
-      !trackUri ||
-      typeof trackUri !== "string"
+      !tracks
     ) {
       return NextResponse.json(
         {
@@ -44,23 +43,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate track URI format
-    if (!isValidSpotifyUri(trackUri, "track")) {
-      return NextResponse.json(
-        { error: "Invalid track URI format." },
-        { status: 400 }
-      );
-    }
+    // // Validate track URI format
+    // if (!isValidSpotifyUri(trackUri, "track")) {
+    //   return NextResponse.json(
+    //     { error: "Invalid track URI format." },
+    //     { status: 400 }
+    //   );
+    // }
 
     // Set the access token for Spotify API
     spotifyApi.setAccessToken(userAccessToken);
 
     // Add the track to the playlist
-    const response = await addTrackToPlaylist(cleanPlaylistId, trackUri);
+    const addData = [];
+    for (let index = 0; index <tracks.length; index++) {
+      const trackUri = tracks[index].uri;
+      const response = await addTrackToPlaylist(cleanPlaylistId, trackUri);
+      if (!response.snapshot_id){
+        return NextResponse.json(
+          { error: "Failed to add track to playlist." },
+          { status: 500 }
+        )
+      }else{
+        addData.push(response);
+      }
+
+      
+    }
 
     return NextResponse.json({
       message: "Track added successfully to the playlist",
-      snapshotId: response.snapshot_id, // Snapshot ID of the playlist after modification
+      snapshotId: addData, // Snapshot ID of the playlist after modification
     });
   } catch (error: any) {
     console.error("Error adding track to playlist:", error);
