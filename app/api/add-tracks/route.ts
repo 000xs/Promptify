@@ -13,22 +13,22 @@ const spotifyApi = new SpotifyWebApi({
 
 export async function POST(req: NextRequest) {
   try {
+    const userAccessToken = req.headers.get("Authorization"); // Access header
+    if (!userAccessToken || typeof userAccessToken !== "string") {
+      return NextResponse.json(
+        { error: "Authorization header is required and must be a string." },
+        { status: 400 }
+      );
+    }
     const body = await req.json();
 
-    const { userAccessToken, playlistId, tracks } = body;
+    const { playlistId, tracks } = body;
 
     // Validate inputs
-    if (
-      !userAccessToken ||
-      typeof userAccessToken !== "string" ||
-      !playlistId ||
-      typeof playlistId !== "string" ||
-      !tracks
-    ) {
+    if (!playlistId || typeof playlistId !== "string" || !tracks) {
       return NextResponse.json(
         {
-          error:
-            "userAccessToken, playlistId, and trackUri are required and must be strings.",
+          error: " playlistId, and trackUri are required and must be strings.",
         },
         { status: 400 }
       );
@@ -56,19 +56,17 @@ export async function POST(req: NextRequest) {
 
     // Add the track to the playlist
     const addData = [];
-    for (let index = 0; index <tracks.length; index++) {
+    for (let index = 0; index < tracks.length; index++) {
       const trackUri = tracks[index].uri;
       const response = await addTrackToPlaylist(cleanPlaylistId, trackUri);
-      if (!response.snapshot_id){
+      if (!response.snapshot_id) {
         return NextResponse.json(
           { error: "Failed to add track to playlist." },
           { status: 500 }
-        )
-      }else{
+        );
+      } else {
         addData.push(response);
       }
-
-      
     }
 
     return NextResponse.json({

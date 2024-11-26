@@ -3,10 +3,30 @@ import axios from "axios";
 import { availableGenres } from "@/data/data"; // Assuming this exports an array of valid genres
 
 export async function POST(req: Request) {
+  const accesToken = req.headers.get("Authorization"); // Access header
+  if (!accesToken || typeof accesToken !== "string") {
+    return NextResponse.json(
+      { error: "Authorization header is required and must be a string." },
+      { status: 400 }
+    );
+  }
   const body = await req.json();
+  if (
+    !body.genres ||
+    body.genres.length === 0 ||
+    !body.query ||
+    typeof body.query !== "string" ||
+    !body.language ||
+    typeof body.language !== "string"
+  ) {
+    return NextResponse.json(
+      { error: "genres,query or language are required and must be strings." },
+      { status: 400 }
+    );
+  }
   try {
     const tracks = await searchSpotifyGenres(
-      body.token,
+      accesToken,
       body.genres,
       10,
       body.query, // Use the provided search query
@@ -16,7 +36,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ tracks });
   } catch (error) {
     console.error("Error in POST handler:", error);
-    return NextResponse.json({ error: error}, { status: 500 });
+    return NextResponse.json({ error: error }, { status: 500 });
   }
 }
 
@@ -87,6 +107,7 @@ async function searchSpotifyGenres(
         "Error fetching data from Spotify API:",
         error.response?.data
       );
+      return [{ error: error.response?.data }, { status: 500 }];
     } else {
       console.error("Unexpected error:", error);
     }

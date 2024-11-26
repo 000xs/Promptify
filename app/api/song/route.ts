@@ -29,6 +29,13 @@ const geminiModel = googleAI.getGenerativeModel({
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    const accesToken = req.headers.get('Authorization'); // Access header
+    if (!accesToken || typeof accesToken !== "string"){
+      return NextResponse.json(
+        { error: "Authorization header is required and must be a string." },
+        { status: 400 }
+      );
+    }
     if (!body.mood || typeof body.mood !== "string") {
       return NextResponse.json(
         { error: "Mood is required and must be a string." },

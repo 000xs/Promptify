@@ -36,16 +36,18 @@ const spotifyApi = new SpotifyWebApi({
 
 export async function POST(req: NextRequest) {
   try {
+    const userAccessToken = req.headers.get("Authorization"); // Access header
+    if (!userAccessToken || typeof userAccessToken !== "string") {
+      return NextResponse.json(
+        { error: "Authorization header is required and must be a string." },
+        { status: 400 }
+      );
+    }
     const body = await req.json();
 
-    if (
-      !body.userAccessToken ||
-      typeof body.userAccessToken !== "string" ||
-      !body.mood ||
-      typeof body.mood !== "string"
-    ) {
+    if (!body.mood || typeof body.mood !== "string") {
       return NextResponse.json(
-        { error: "userAccessToken and mood are required and must be strings." },
+        { error: "mood are required and must be strings." },
         { status: 400 }
       );
     }
