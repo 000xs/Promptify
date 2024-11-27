@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const tracks = await searchSpotifyGenres(
       accesToken,
       body.genres,
-      10,
+      body.limit,
       body.query, // Use the provided search query
       body.language // Corrected from body.lanuge to body.language
     );
@@ -69,7 +69,7 @@ async function searchSpotifyGenres(
   const params = {
     q: fullQuery, // Use dynamic query instead of hardcoded one
     type: "track",
-    limit: limit,
+    limit: limit || 10,
     locale: language || "SI", // Default to English if language is undefined
   };
 

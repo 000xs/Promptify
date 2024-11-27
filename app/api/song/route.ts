@@ -207,7 +207,7 @@ Genres list:  [
 
       const realData = arrData(indexs);
 
-      return NextResponse.json({ genres, indexs, realData, query });
+      return NextResponse.json({ genres, indexs, realData, query },{status:200});
     }
 
     throw new Error("Unexpected response structure from Gemini AI.");

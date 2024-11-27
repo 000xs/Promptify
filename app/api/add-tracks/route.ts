@@ -25,15 +25,22 @@ export async function POST(req: NextRequest) {
     const { playlistId, tracks } = body;
 
     // Validate inputs
-    if (!playlistId || typeof playlistId !== "string" || !tracks) {
+    if (!playlistId || typeof playlistId !== "string") {
       return NextResponse.json(
         {
-          error: " playlistId, and trackUri are required and must be strings.",
+          error: " playlistId are required and must be strings.",
         },
         { status: 400 }
       );
     }
-
+    if (!tracks) {
+      return NextResponse.json(
+        {
+          error: " traks are required and must be array.",
+        },
+        { status: 400 }
+      );
+    }
     // Extract playlist ID if a full URI is provided
     const cleanPlaylistId = extractIdFromUri(playlistId, "playlist");
     if (!cleanPlaylistId) {
@@ -43,22 +50,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // // Validate track URI format
-    // if (!isValidSpotifyUri(trackUri, "track")) {
-    //   return NextResponse.json(
-    //     { error: "Invalid track URI format." },
-    //     { status: 400 }
-    //   );
-    // }
-
     // Set the access token for Spotify API
     spotifyApi.setAccessToken(userAccessToken);
+    // console.log("data add play list : ", tracks);
 
     // Add the track to the playlist
     const addData = [];
     for (let index = 0; index < tracks.length; index++) {
-      const trackUri = tracks[index].uri;
+      const trackUri = tracks[index];
       const response = await addTrackToPlaylist(cleanPlaylistId, trackUri);
+      console.log(response);
       if (!response.snapshot_id) {
         return NextResponse.json(
           { error: "Failed to add track to playlist." },
