@@ -37,17 +37,18 @@ export default function HomePage() {
     const step1 = await handleGetDataAI(prompt);
 
     if (step1) {
-      console.log("step 1", step1);
+      console.log("step 1");
       const step2 = await fetchTracks();
       if (step2) {
-        console.log("step 2", step2);
+        console.log("step 2");
         const step3 = await createPlaylist();
         if (step3) {
-          console.log("step 3", step3);
-          alert(`playlistID : ${step3} ,  tracks : ${step2}`);
+          console.log("step 3");
+
           const step4 = await addTracksToPlaylist(step3, step2);
           if (step4) {
-            console.log("step 4", step4);
+            console.log("step 4");
+            alert(createPlaylistUrl(step3));
             setLodeing(false);
           }
         }
@@ -79,10 +80,6 @@ export default function HomePage() {
       setGenres(response.data.genres);
       setSearchQuery(response.data.query[0]);
 
-      console.log("Generated Songs:", response.data);
-      alert("Songs generated successfully!");
-      console.log("Generated Songs:", aiData);
-      alert("Songs generated successfully!");
       return true;
     } catch (error: string | any) {
       console.error(error.response.data.error);
@@ -97,8 +94,9 @@ export default function HomePage() {
         "/api/track",
         {
           genres: genres, // Directly include `mood` in the body
-          query: searchQuery,
+          query: searchQuery +  " " + language,
           language: language,
+          limit: songCount,
         },
         {
           headers: {
@@ -112,8 +110,7 @@ export default function HomePage() {
         return;
       }
       const tracks = response.data.tracks.map((track: any) => track.uri);
-      console.log(tracks);
-       
+
       return tracks;
     } catch (error: string | any) {
       console.error(error.response.data.error);
@@ -143,7 +140,6 @@ export default function HomePage() {
         response.data.uri || "spotify:playlist:12VnkbFPZG4a2un3AssCzU"
       );
 
-      console.log(response.data);
       return response.data.uri;
     } catch (error: string | any) {
       console.error(error.response.data.error);
@@ -174,7 +170,7 @@ export default function HomePage() {
         console.log("No data received, loading...");
         return;
       }
-      console.log(response.data);
+
       return true;
     } catch (error: string | any) {
       console.error(error.response.data.error);
@@ -182,6 +178,14 @@ export default function HomePage() {
       return false;
     }
   };
+
+  function createPlaylistUrl(uri: string): string {
+    // Split the string by ':' and take the last part
+    const parts = uri.split(":");
+    const baseURL = "https://open.spotify.com/playlist/";
+    const id = parts[parts.length - 1];
+    return `${baseURL}${id}`;
+  }
 
   return (
     <Fragment>
@@ -257,13 +261,13 @@ export default function HomePage() {
                         htmlFor="number"
                         className="text-white font-medium"
                       >
-                        Count of Songs (max 100)
+                        Count of Songs (max 50)
                       </label>
                       <input
                         type="number"
                         name="number"
                         id="number"
-                        max="100"
+                        max="50"
                         min="1"
                         className="bg-gray-950 p-2 border-white border rounded-md"
                         value={songCount}
@@ -287,7 +291,9 @@ export default function HomePage() {
                 )}
               </div>
             ) : (
-              <div className="loading">loading...</div>
+              <div className="loading h-[50vh] blur-[1px] flex justify-center items-center ">
+                <p className="text-white">Loding...</p>
+              </div>
             )}
           </div>
         </div>
