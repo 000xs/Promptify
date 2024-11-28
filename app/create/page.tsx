@@ -4,10 +4,13 @@ import Navigationbar from "@/components/Navigationbar";
 import axios from "axios";
 import { useSession, signIn } from "next-auth/react";
 import { useState, Fragment } from "react";
+import { Loader2, Music, Music2 } from "lucide-react";
+import Link from "next/link";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
   const [lodeing, setLodeing] = useState(false);
+  const [isGenerated, setIsGenerated] = useState("");
 
   const [aiData, setAIData] = useState("");
   const [genres, setGenres] = useState(["pop"]);
@@ -49,6 +52,7 @@ export default function HomePage() {
           if (step4) {
             console.log("step 4");
             alert(createPlaylistUrl(step3));
+            setIsGenerated(createPlaylistUrlEmbed(step3));
             setLodeing(false);
           }
         }
@@ -94,7 +98,7 @@ export default function HomePage() {
         "/api/track",
         {
           genres: genres, // Directly include `mood` in the body
-          query: searchQuery +  " " + language,
+          query: searchQuery + " " + language,
           language: language,
           limit: songCount,
         },
@@ -186,117 +190,143 @@ export default function HomePage() {
     const id = parts[parts.length - 1];
     return `${baseURL}${id}`;
   }
+  function createPlaylistUrlEmbed(uri: string): string {
+    // Split the string by ':' and take the last part
+    const parts = uri.split(":");
+    const baseURL = "https://open.spotify.com/playlist/";
+    const id = parts[parts.length - 1];
+    // return `${baseURL}${id}`;
+    return `https://open.spotify.com/embed/playlist/${id}?utm_source=generator`;
+  }
 
   return (
     <Fragment>
-      <div className="w-full h-screen bg-green-500">
+      <div className="flex min-h-screen flex-col ">
         <Navigationbar />
-        <div className="flex items-center justify-center px-24">
-          <div className="container rounded-md bg-black text-white">
-            {!lodeing ? (
-              <div>
-                {session ? (
-                  <form
-                    onSubmit={handleSubmit}
-                    className="flex flex-col px-8 py-8 space-y-4"
-                  >
-                    <div className="flex flex-col space-y-2">
+        <main className="flex-1 bg-gradient-to-b from-emerald-50 to-white justify-center flex items-center">
+          <div className="container max-w-4xl py-12  px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl font-extrabold tracking-tight text-emerald-800 sm:text-5xl md:text-6xl">
+                Create Your Playlist
+              </h1>
+              <p className="mt-3 max-w-md mx-auto text-base text-emerald-600 sm:text-lg md:mt-5 md:text-xl">
+                Describe your mood and preferences to generate a personalized
+                playlist.
+              </p>
+            </div>
+            <div className="bg-white shadow-xl rounded-lg overflow-hidden">
+              <div className="p-6 sm:p-10">
+                {!isGenerated ? (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
                       <label
-                        htmlFor="prompt"
-                        className="text-white font-medium"
+                        htmlFor="mood"
+                        className="block text-sm font-medium text-emerald-700"
                       >
-                        Describe your feelings
+                        Describe your mood
                       </label>
                       <textarea
-                        name="prompt"
-                        id="prompt"
-                        placeholder="Prompt..."
-                        className="bg-gray-950 placeholder:text-gray-400 text-gray-300 border rounded-md p-2 border-white"
-                        value={prompt}
+                        id="mood"
+                        placeholder="E.g. Feeling energetic and ready to workout, need upbeat music..."
+                        className="min-h-[100px] p-4 w-full border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500"
                         onChange={(e) => setPrompt(e.target.value)}
-                      ></textarea>
-                    </div>
-                    <div className="flex flex-col space-y-2">
-                      <label
-                        htmlFor="language"
-                        className="text-white font-medium"
-                      >
-                        Language
-                      </label>
-                      <select
-                        id="language"
-                        className="border rounded-md p-2 border-white bg-gray-950 text-white"
-                        value={language}
-                        onChange={(e) => setLanguage(e.target.value)}
-                      >
-                        <option value="English">English</option>
-                        <option value="Spanish">Spanish</option>
-                        <option value="French">French</option>
-                        <option value="German">German</option>
-                        <option value="Italian">Italian</option>
-                        <option value="Portuguese">Portuguese</option>
-                        <option value="Chinese">Chinese</option>
-                        <option value="Japanese">Japanese</option>
-                        <option value="Korean">Korean</option>
-                        <option value="Russian">Russian</option>
-                        <option value="Arabic">Arabic</option>
-                        <option value="Sinhala">Sinhala</option>
-                        <option value="Hindi">Hindi</option>
-                        <option value="Turkish">Turkish</option>
-                        <option value="Dutch">Dutch</option>
-                        <option value="Polish">Polish</option>
-                        <option value="Swedish">Swedish</option>
-                        <option value="Greek">Greek</option>
-                        <option value="Czech">Czech</option>
-                        <option value="Romanian">Romanian</option>
-                        <option value="Thai">Thai</option>
-                        <option value="Vietnamese">Vietnamese</option>
-                        <option value="Indonesian">Indonesian</option>
-                        <option value="Tamil">Tamil</option>
-                        <option value="Telugu">Telugu</option>
-                      </select>
-                    </div>
-                    <div className="flex flex-col space-y-2">
-                      <label
-                        htmlFor="number"
-                        className="text-white font-medium"
-                      >
-                        Count of Songs (max 50)
-                      </label>
-                      <input
-                        type="number"
-                        name="number"
-                        id="number"
-                        max="50"
-                        min="1"
-                        className="bg-gray-950 p-2 border-white border rounded-md"
-                        value={songCount}
-                        onChange={(e) => setSongCount(Number(e.target.value))}
+                        required
                       />
                     </div>
-                    <input
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="language"
+                          className="block text-sm font-medium text-emerald-700"
+                        >
+                          Preferred Language
+                        </label>
+                        <select
+                          id="language"
+                          className="w-full border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500"
+                          value={language}
+                          onChange={(e) => setLanguage(e.target.value)}
+                        >
+                          <option value="English">English</option>
+                          <option value="Spanish">Spanish</option>
+                          <option value="French">French</option>
+                          <option value="German">German</option>
+                          <option value="Italian">Italian</option>
+                          <option value="Portuguese">Portuguese</option>
+                          <option value="Chinese">Chinese</option>
+                          <option value="Japanese">Japanese</option>
+                          <option value="Korean">Korean</option>
+                          <option value="Russian">Russian</option>
+                          <option value="Arabic">Arabic</option>
+                          <option value="Sinhala">Sinhala</option>
+                          <option value="Hindi">Hindi</option>
+                          <option value="Turkish">Turkish</option>
+                          <option value="Dutch">Dutch</option>
+                          <option value="Polish">Polish</option>
+                          <option value="Swedish">Swedish</option>
+                          <option value="Greek">Greek</option>
+                          <option value="Czech">Czech</option>
+                          <option value="Romanian">Romanian</option>
+                          <option value="Thai">Thai</option>
+                          <option value="Vietnamese">Vietnamese</option>
+                          <option value="Indonesian">Indonesian</option>
+                          <option value="Tamil">Tamil</option>
+                          <option value="Telugu">Telugu</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="songCount"
+                          className="block text-sm font-medium text-emerald-700"
+                        >
+                          Number of Songs
+                        </label>
+                        <input
+                          id="songCount"
+                          type="number"
+                          min="5"
+                          max="50"
+                          defaultValue="20"
+                          className="w-full border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500"
+                          value={songCount}
+                          onChange={(e) => setSongCount(Number(e.target.value))}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <button
                       type="submit"
-                      disabled={lodeing}
-                      value="✨Generate"
-                      className="bg-gray-950 p-2 border-white border rounded-md cursor-pointer"
-                    />
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50"
+                    >
+                      {lodeing ? (
+                        <div className="inline-flex ">
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Generating...
+                        </div>
+                      ) : (
+                        <div className="inline-flex ">
+                          <Music className="mr-2 h-5 w-5" />
+                          Generate Playlist
+                        </div>
+                      )}
+                    </button>
                   </form>
                 ) : (
-                  <button
-                    onClick={() => signIn()}
-                    className="bg-gray-950 p-2 text-white rounded-md"
-                  >
-                    Sign in
-                  </button>
+                  <div>
+                    <iframe
+                      className="rounded-lg"
+                      src={isGenerated}
+                      width="100%"
+                      height="352"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
                 )}
               </div>
-            ) : (
-              <div className="loading h-[50vh] blur-[1px] flex justify-center items-center ">
-                <p className="text-white">Loding...</p>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
+        </main>
       </div>
     </Fragment>
   );

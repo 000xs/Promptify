@@ -14,7 +14,7 @@ function Navigationbar() {
     <div className="bg-transparent font-[var(--font-spoti-sans)] relative flex items-center justify-between flex-row px-24 py-6">
       <div className="ico">
         <h1 className="  font-spotiSans font-medium cursor-pointer text-3xl">
-          Promptify
+          Prompti<span className="text-emerald-500">fy</span> 
         </h1>
       </div>
       <ul className="list flex flex-row items-center space-x-8 font-medium">
