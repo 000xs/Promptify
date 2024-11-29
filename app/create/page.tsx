@@ -6,6 +6,7 @@ import { useSession, signIn } from "next-auth/react";
 import { useState, Fragment } from "react";
 import { Loader2, Music, Music2 } from "lucide-react";
 import Link from "next/link";
+import { Loading } from "@/components/Loading";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -24,7 +25,7 @@ export default function HomePage() {
   const [language, setLanguage] = useState("English");
   const [songCount, setSongCount] = useState(1);
 
-  if (status === "loading") return <p>Loading...</p>;
+  if (status === "loading") return <Loading />;
 
   // Form submission handler
   const handleSubmit = async (e: any) => {

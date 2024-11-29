@@ -5,7 +5,7 @@ import { Music2, Facebook, Twitter, Instagram } from "lucide-react";
 export function Footer() {
   return (
     <footer className="bg-emerald-500 text-white">
-      <div className="container px-4 py-12 md:py-16 lg:py-20">
+      <div className="container px-20 py-12 md:py-16 lg:py-20">
         <div className="grid gap-8 lg:grid-cols-4">
           <div className="space-y-4">
             <Link href="/" className="flex items-center space-x-2">

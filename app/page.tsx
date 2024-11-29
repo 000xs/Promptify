@@ -7,11 +7,12 @@ import { Fragment } from "react";
 import { ArrowRight, Music2, Sparkles, Globe2, Clock } from 'lucide-react'
 import Link from "next/link"
 import { Footer } from "@/components/footer";
+import { Loading } from "@/components/Loading";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
 
-  if (status === "loading") return <p>Loading...</p>;
+  if (status === "loading") return <Loading />;
 
   return (
     <Fragment>
