@@ -11,7 +11,7 @@ import axios from "axios";
 interface Playlist {
   id: string;
   name: string;
-  url: string;
+  description: string;
 }
 export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
