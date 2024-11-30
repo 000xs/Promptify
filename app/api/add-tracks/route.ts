@@ -74,10 +74,12 @@ export async function POST(req: NextRequest) {
       message: "Track added successfully to the playlist",
       snapshotId: addData, // Snapshot ID of the playlist after modification
     });
-  } catch (error: any) {
-    console.error("Error adding track to playlist:", error);
+  } catch (error) {
+    const e = error as Error; // Type assertion
+    console.error(e.message);
+
     return NextResponse.json(
-      { error: "Internal server error", details: error.message || error },
+      { error: "Internal server error", details: e || error },
       { status: 500 }
     );
   }
@@ -92,14 +94,6 @@ const extractIdFromUri = (
   return match ? match[1] : uri; // If no match, assume it's already an ID
 };
 
-const isValidSpotifyUri = (
-  uri: string,
-  type: "playlist" | "track"
-): boolean => {
-  const regex = new RegExp(`^spotify:${type}:[a-zA-Z0-9]+$`);
-  return regex.test(uri);
-};
-
 const addTrackToPlaylist = async (
   playlistId: string,
   trackUri: string
@@ -109,9 +103,9 @@ const addTrackToPlaylist = async (
       trackUri,
     ]);
     return response.body; // Return the response body for snapshot ID
-  } catch (error: any) {
-    console.error("Spotify API Error:", error.message || error);
-    console.error("Error Details:", error.body || error);
+  } catch (error) {
+    const e = error as Error; // Type assertion
+    console.error(e.message);
     throw new Error("Failed to add track to Spotify playlist.");
   }
 };

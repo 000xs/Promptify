@@ -85,10 +85,11 @@ export async function POST(req: NextRequest) {
       uri: createPlaylistResponse.uri,
       data: createPlaylistResponse,
     });
-  } catch (error: any) {
-    console.error("Error creating playlist:", error);
+  } catch (error) {
+    const e = error as Error; // Type assertion
+    console.error(e.message);
     return NextResponse.json(
-      { error: "Internal server error", details: error.message || error },
+      { error: "Internal server error", details: e || error },
       { status: 500 }
     );
   }
@@ -123,9 +124,9 @@ const createPlaylist = async (
     });
 
     return response.body; // Return the created playlist object
-  } catch (error: any) {
-    console.error("Spotify API Error:", error.message || error);
-    console.error("Error Details:", error.body || error);
+  } catch (error) {
+    const e = error as Error; // Type assertion
+    console.error(e.message);
     throw new Error("Failed to create Spotify playlist.");
   }
 };

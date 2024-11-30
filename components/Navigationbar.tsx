@@ -3,11 +3,11 @@
 import React, { useState } from "react";
 
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+ 
 
 function Navigationbar() {
   const [popup, setPopup] = useState(false);
-  const { data: session, status } = useSession();
+  const { data: session  } = useSession();
   const sgin = () => signIn();
 
   return (
@@ -24,7 +24,7 @@ function Navigationbar() {
         >
           Create
         </li>
-        <li className="cursor-pointer">How it's work</li>
+        <li className="cursor-pointer">How it&apos;s work</li>
         <li className="cursor-pointer">Pricing</li>
         <li className="cta  ">
           {session ? (

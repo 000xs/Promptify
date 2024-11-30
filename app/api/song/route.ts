@@ -29,8 +29,8 @@ const geminiModel = googleAI.getGenerativeModel({
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const accesToken = req.headers.get('Authorization'); // Access header
-    if (!accesToken || typeof accesToken !== "string"){
+    const accesToken = req.headers.get("Authorization"); // Access header
+    if (!accesToken || typeof accesToken !== "string") {
       return NextResponse.json(
         { error: "Authorization header is required and must be a string." },
         { status: 400 }
@@ -207,16 +207,21 @@ Genres list:  [
 
       const realData = arrData(indexs);
 
-      return NextResponse.json({ genres, indexs, realData, query },{status:200});
+      return NextResponse.json(
+        { genres, indexs, realData, query },
+        { status: 200 }
+      );
     }
 
     throw new Error("Unexpected response structure from Gemini AI.");
-  } catch (error: any) {
-    console.error("Error generating playlist:", error);
+  } catch (error) {
+    const e = error as Error; // Type assertion
+    console.error(e.message);
+     
     return NextResponse.json(
       {
         error: "Failed to generate playlist suggestions.",
-        details: error.message,
+        details: e,
       },
       { status: 500 }
     );

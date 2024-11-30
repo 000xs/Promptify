@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Music2, Settings, LogOut } from "lucide-react";
+
 import { Loading } from "@/components/Loading";
 import Navigationbar from "@/components/Navigationbar";
 import { useSession } from "next-auth/react";
@@ -14,8 +14,6 @@ interface Playlist {
   description: string;
 }
 export default function ProfilePage() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState(null);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
   async function getUserPlaylists(token: string): Promise<void> {
@@ -36,11 +34,10 @@ export default function ProfilePage() {
       //     `Name: ${playlist.name}, URL: ${playlist.external_urls.spotify}`
       //   );
       // });
-    } catch (error: any) {
-      console.error(
-        "Error fetching playlists:",
-        error || error.message || error.data
-      );
+    } catch (error) {
+      const e = error as Error; // Type assertion
+      console.error(e.message);
+      console.error("Error fetching playlists:", e);
     }
   }
 
@@ -85,7 +82,7 @@ export default function ProfilePage() {
                 Your Playlists
               </h1>
               <p className="text-lg   text-emerald-600">
-                Here are the playlists you've generated
+                Here are the playlists you&apos;ve generated
               </p>
             </div>
             <div>

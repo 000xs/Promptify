@@ -1,16 +1,16 @@
 "use client";
 
 import Navigationbar from "@/components/Navigationbar";
-import { useSession, signIn, signOut } from "next-auth/react";
-import Image from "next/image";
+import { useSession } from "next-auth/react";
+
 import { Fragment } from "react";
-import { ArrowRight, Music2, Sparkles, Globe2, Clock } from 'lucide-react'
-import Link from "next/link"
+import { ArrowRight, Sparkles, Globe2, Clock } from "lucide-react";
+import Link from "next/link";
 import { Footer } from "@/components/footer";
 import { Loading } from "@/components/Loading";
 
 export default function HomePage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
   if (status === "loading") return <Loading />;
 
@@ -33,10 +33,7 @@ export default function HomePage() {
                   </p>
                 </div>
                 <Link href="/create">
-                  <button
-                    
-                    className="bg-white text-emerald-500 inline-flex hover:bg-white/90 rounded-md px-4 py-2.5 font-medium  hover:text-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                  >
+                  <button className="bg-white text-emerald-500 inline-flex hover:bg-white/90 rounded-md px-4 py-2.5 font-medium  hover:text-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
                     Get Started <ArrowRight className="ml-2 h-4 w-4" />
                   </button>
                 </Link>

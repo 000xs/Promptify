@@ -2,10 +2,10 @@
 
 import Navigationbar from "@/components/Navigationbar";
 import axios from "axios";
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useState, Fragment } from "react";
-import { Loader2, Music, Music2 } from "lucide-react";
-import Link from "next/link";
+import { Loader2, Music } from "lucide-react";
+
 import { Loading } from "@/components/Loading";
 
 export default function HomePage() {
@@ -13,12 +13,8 @@ export default function HomePage() {
   const [lodeing, setLodeing] = useState(false);
   const [isGenerated, setIsGenerated] = useState("");
 
-  const [aiData, setAIData] = useState("");
   const [genres, setGenres] = useState(["pop"]);
   const [searchQuery, setSearchQuery] = useState("pop");
-
-  const [tracks, setTracks] = useState([]);
-  const [playlistId, setPlaylistId] = useState("");
 
   // States for form inputs
   const [prompt, setPrompt] = useState("");
@@ -28,7 +24,7 @@ export default function HomePage() {
   if (status === "loading") return <Loading />;
 
   // Form submission handler
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Validate input values
@@ -80,19 +76,25 @@ export default function HomePage() {
         return;
       }
 
-      // Update the state with response data
-      setAIData(response.data);
       setGenres(response.data.genres);
       setSearchQuery(response.data.query[0]);
 
       return true;
-    } catch (error: string | any) {
-      console.error(error.response.data.error);
+    } catch (error) {
+      const e = error as Error; // Type assertion
+      console.error(e.message);
       alert("An error occurred while generating songs.");
       return false;
     }
   };
-
+  interface Track {
+    uri: string; // Assuming 'uri' is a string; add other properties as needed
+    // Add other properties if necessary, e.g.:
+    // id: string;
+    // name: string;
+    // album: { name: string };
+    // etc.
+  }
   const fetchTracks = async () => {
     try {
       const response = await axios.post(
@@ -114,11 +116,12 @@ export default function HomePage() {
         console.log("No data received, loading...");
         return;
       }
-      const tracks = response.data.tracks.map((track: any) => track.uri);
+      const tracks = response.data.tracks.map((track: Track) => track.uri);
 
       return tracks;
-    } catch (error: string | any) {
-      console.error(error.response.data.error);
+    } catch (error) {
+      const e = error as Error; // Type assertion
+      console.error(e.message);
       alert("An error occurred while generating songs.");
       return false;
     }
@@ -141,13 +144,11 @@ export default function HomePage() {
         console.log("No data received, loading...");
         return;
       }
-      setPlaylistId(
-        response.data.uri || "spotify:playlist:12VnkbFPZG4a2un3AssCzU"
-      );
 
       return response.data.uri;
-    } catch (error: string | any) {
-      console.error(error.response.data.error);
+    } catch (error) {
+      const e = error as Error; // Type assertion
+      console.error(e.message);
       alert("An error occurred while generating songs.");
       return false;
     }
@@ -177,8 +178,9 @@ export default function HomePage() {
       }
 
       return true;
-    } catch (error: string | any) {
-      console.error(error.response.data.error);
+    } catch (error) {
+      const e = error as Error; // Type assertion
+      console.error(e.message);
       alert("An error occurred while generating songs.");
       return false;
     }
@@ -194,7 +196,7 @@ export default function HomePage() {
   function createPlaylistUrlEmbed(uri: string): string {
     // Split the string by ':' and take the last part
     const parts = uri.split(":");
-    const baseURL = "https://open.spotify.com/playlist/";
+
     const id = parts[parts.length - 1];
     // return `${baseURL}${id}`;
     return `https://open.spotify.com/embed/playlist/${id}?utm_source=generator`;

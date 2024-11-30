@@ -35,9 +35,23 @@ export async function POST(req: Request) {
     console.log(tracks);
     return NextResponse.json({ tracks });
   } catch (error) {
-    console.error("Error in POST handler:", error);
-    return NextResponse.json({ error: error }, { status: 500 });
+    const e = error as Error; // Type assertion
+    console.error(e.message);
+    return NextResponse.json({ error: e }, { status: 500 });
   }
+}
+
+interface Track {
+  id: string;
+  uri: string;
+  name: string;
+  album: {
+    name: string;
+  };
+  preview_url?: string | null; // Optional property
+  external_urls: {
+    spotify: string;
+  };
 }
 
 async function searchSpotifyGenres(
@@ -46,7 +60,7 @@ async function searchSpotifyGenres(
   limit: number,
   searchQuery: string, // Use the provided search query
   language: string // Parameter for language
-): Promise<any[]> {
+): Promise<Track[]> {
   const baseUrl = "https://api.spotify.com/v1/search";
   console.log(language);
 
@@ -92,7 +106,7 @@ async function searchSpotifyGenres(
     }
 
     // Return only the tracks array
-    return response.data.tracks.items.map((track: any) => ({
+    return response.data.tracks.items.map((track: Track) => ({
       id: track.id,
       uri: track.uri,
       name: track.name,
@@ -107,7 +121,7 @@ async function searchSpotifyGenres(
         "Error fetching data from Spotify API:",
         error.response?.data
       );
-      return [{ error: error.response?.data }, { status: 500 }];
+      // return [{ error: error.response?.data }, { status: 500 }];
     } else {
       console.error("Unexpected error:", error);
     }
