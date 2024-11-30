@@ -22,6 +22,7 @@ export default function HomePage() {
   const [songCount, setSongCount] = useState(1);
 
   if (status === "loading") return <Loading />;
+  if (!session?.accessToken) return <p>Not Autherized!</p>;
 
   // Form submission handler
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
