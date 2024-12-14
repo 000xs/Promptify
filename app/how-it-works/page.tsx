@@ -39,7 +39,7 @@ export default function HowItWorksPage() {
             </div>
             <div>
               <p className="px-4 py-2">
-                Tell us how you're feeling or what kind of atmosphere you want
+                Tell us how you&apos;re feeling or what kind of atmosphere you want
                 to create. Our AI understands natural language and emotions.
               </p>
             </div>
@@ -69,8 +69,8 @@ export default function HowItWorksPage() {
             </div>
             <div>
               <p className="px-4 py-2">
-                Decide how many songs you want in your playlist. Whether it's
-                for a quick workout or an all-night party, we've got you
+                Decide how many songs you want in your playlist. Whether it&apos;s
+                for a quick workout or an all-night party, we&apos;ve got you
                 covered.
               </p>
             </div>
