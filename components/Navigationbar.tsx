@@ -3,18 +3,17 @@
 import React, { useState } from "react";
 
 import { signIn, useSession } from "next-auth/react";
- 
 
 function Navigationbar() {
   const [popup, setPopup] = useState(false);
-  const { data: session  } = useSession();
+  const { data: session } = useSession();
   const sgin = () => signIn();
 
   return (
     <div className="bg-transparent font-[var(--font-spoti-sans)] relative flex items-center justify-between flex-row px-24 py-6">
       <div className="ico">
         <h1 className="  font-spotiSans font-medium cursor-pointer text-3xl">
-          Prompti<span className="text-emerald-500">fy</span> 
+          Prompti<span className="text-emerald-500">fy</span>
         </h1>
       </div>
       <ul className="list flex flex-row items-center space-x-8 font-medium">
@@ -24,8 +23,18 @@ function Navigationbar() {
         >
           Create
         </li>
-        <li className="cursor-pointer">How it&apos;s work</li>
-        <li className="cursor-pointer">Pricing</li>
+        <li
+          className="cursor-pointer"
+          onClick={() => (window.location.href = "/how-it-works")}
+        >
+          How it&apos;s work
+        </li>
+        <li
+          className="cursor-pointer"
+          onClick={() => (window.location.href = "/pricing")}
+        >
+          Pricing
+        </li>
         <li className="cta  ">
           {session ? (
             <ul

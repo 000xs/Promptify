@@ -7,6 +7,7 @@ import { useState, Fragment } from "react";
 import { Loader2, Music } from "lucide-react";
 
 import { Loading } from "@/components/Loading";
+import Not from "@/components/Not";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -22,7 +23,7 @@ export default function HomePage() {
   const [songCount, setSongCount] = useState(1);
 
   if (status === "loading") return <Loading />;
-  if (!session?.accessToken) return <p>Not Autherized!</p>;
+  if (!session?.accessToken) return <Not />;
 
   // Form submission handler
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
