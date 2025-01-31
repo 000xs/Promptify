@@ -5,14 +5,14 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useState, Fragment } from "react";
 import { Loader2, Music } from "lucide-react";
-
 import { Loading } from "@/components/Loading";
 import Not from "@/components/Not";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
-  const [lodeing, setLodeing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [isGenerated, setIsGenerated] = useState("");
+  const [error, setError] = useState("");
 
   const [genres, setGenres] = useState(["pop"]);
   const [searchQuery, setSearchQuery] = useState("pop");
@@ -20,46 +20,50 @@ export default function HomePage() {
   // States for form inputs
   const [prompt, setPrompt] = useState("");
   const [language, setLanguage] = useState("English");
-  const [songCount, setSongCount] = useState(1);
+  const [songCount, setSongCount] = useState(20);
 
   if (status === "loading") return <Loading />;
   if (!session?.accessToken) return <Not />;
-
-  if(session.accessToken){
-    console.log(session)
-  }
 
   // Form submission handler
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Validate input values
-    if (!prompt || songCount < 1 || songCount > 100) {
-      alert("Please provide valid input values.");
+    if (!prompt.trim()) {
+      setError("Please describe your mood.");
       return;
     }
-    setLodeing(true);
+    if (songCount < 5 || songCount > 50) {
+      setError("Number of songs must be between 5 and 50.");
+      return;
+    }
 
-    const step1 = await handleGetDataAI(prompt);
+    setLoading(true);
+    setError("");
 
-    if (step1) {
-      console.log("step 1");
+    try {
+      const step1 = await handleGetDataAI(prompt);
+      if (!step1) throw new Error("Failed to generate data.");
+
       const step2 = await fetchTracks();
-      if (step2) {
-        console.log("step 2");
-        const step3 = await createPlaylist();
-        if (step3) {
-          console.log("step 3");
+      if (!step2) throw new Error("Failed to fetch tracks.");
 
-          const step4 = await addTracksToPlaylist(step3, step2);
-          if (step4) {
-            console.log("step 4");
-            alert(createPlaylistUrl(step3));
-            setIsGenerated(createPlaylistUrlEmbed(step3));
-            setLodeing(false);
-          }
-        }
-      }
+      const step3 = await createPlaylist();
+      if (!step3) throw new Error("Failed to create playlist.");
+
+      const step4 = await addTracksToPlaylist(step3, step2);
+      if (!step4) throw new Error("Failed to add tracks to playlist.");
+
+      setIsGenerated(createPlaylistUrlEmbed(step3));
+      alert(`Playlist created successfully! ${createPlaylistUrl(step3)}`);
+    } catch (error) {
+      console.error(error);
+      setError(
+        "An error occurred while generating the playlist. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,153 +71,119 @@ export default function HomePage() {
     try {
       const response = await axios.post(
         "/api/song",
-        {
-          mood: prompt, // Directly include `mood` in the body
-        },
+        { mood: prompt },
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: session?.accessToken || "", // Fallback for undefined session
+            Authorization: session?.accessToken || "",
           },
         }
       );
-      if (!response.data) {
-        console.log("No data received, loading...");
-        return;
-      }
+      if (!response.data) throw new Error("No data received.");
 
       setGenres(response.data.genres);
       setSearchQuery(response.data.query[0]);
-
       return true;
     } catch (error) {
-      const e = error as Error; // Type assertion
-      console.error(e.message);
-      alert("An error occurred while generating songs.");
+      console.error(error);
+      setError("Failed to generate song data.");
       return false;
     }
   };
+
   interface Track {
-    uri: string; // Assuming 'uri' is a string; add other properties as needed
-    // Add other properties if necessary, e.g.:
-    // id: string;
-    // name: string;
-    // album: { name: string };
-    // etc.
+    uri: string;
   }
+
   const fetchTracks = async () => {
     try {
       const response = await axios.post(
         "/api/track",
         {
-          genres: genres, // Directly include `mood` in the body
-          query: searchQuery + " " + language,
-          language: language,
+          genres,
+          query: `${searchQuery} ${language}`,
+          language,
           limit: songCount,
         },
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: session?.accessToken || "", // Fallback for undefined session
+            Authorization: session?.accessToken || "",
           },
         }
       );
-      if (!response.data) {
-        console.log("No data received, loading...");
-        return;
-      }
-      const tracks = response.data.tracks.map((track: Track) => track.uri);
+      if (!response.data) throw new Error("No data received.");
 
-      return tracks;
+      return response.data.tracks.map((track: Track) => track.uri);
     } catch (error) {
-      const e = error as Error; // Type assertion
-      console.error(e.message);
-      alert("An error occurred while generating songs.");
+      console.error(error);
+      setError("Failed to fetch tracks.");
       return false;
     }
   };
+
   const createPlaylist = async () => {
     try {
       const response = await axios.post(
         "/api/create-playlist",
-        {
-          mood: prompt, // Directly include `mood` in the body
-        },
+        { mood: prompt },
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: session?.accessToken || "", // Fallback for undefined session
+            Authorization: session?.accessToken || "",
           },
         }
       );
-      if (!response.data) {
-        console.log("No data received, loading...");
-        return;
-      }
+      if (!response.data) throw new Error("No data received.");
 
       return response.data.uri;
     } catch (error) {
-      const e = error as Error; // Type assertion
-      console.error(e.message);
-      alert("An error occurred while generating songs.");
+      console.error(error);
+      setError("Failed to create playlist.");
       return false;
     }
   };
 
-  const addTracksToPlaylist = async (
-    playlistIds: string,
-    trackss: string[]
-  ) => {
+  const addTracksToPlaylist = async (playlistId: string, tracks: string[]) => {
     try {
       const response = await axios.post(
         "/api/add-tracks",
-        {
-          playlistId: playlistIds,
-          tracks: trackss,
-        },
+        { playlistId, tracks },
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: session?.accessToken || "", // Fallback for undefined session
+            Authorization: session?.accessToken || "",
           },
         }
       );
-      if (!response.data) {
-        console.log("No data received, loading...");
-        return;
-      }
+      if (!response.data) throw new Error("No data received.");
 
       return true;
     } catch (error) {
-      const e = error as Error; // Type assertion
-      console.error(e.message);
-      alert("An error occurred while generating songs.");
+      console.error(error);
+      setError("Failed to add tracks to playlist.");
       return false;
     }
   };
 
-  function createPlaylistUrl(uri: string): string {
-    // Split the string by ':' and take the last part
+  const createPlaylistUrl = (uri: string): string => {
     const parts = uri.split(":");
-    const baseURL = "https://open.spotify.com/playlist/";
     const id = parts[parts.length - 1];
-    return `${baseURL}${id}`;
-  }
-  function createPlaylistUrlEmbed(uri: string): string {
-    // Split the string by ':' and take the last part
-    const parts = uri.split(":");
+    return `https://open.spotify.com/playlist/${id}`;
+  };
 
+  const createPlaylistUrlEmbed = (uri: string): string => {
+    const parts = uri.split(":");
     const id = parts[parts.length - 1];
-    // return `${baseURL}${id}`;
     return `https://open.spotify.com/embed/playlist/${id}?utm_source=generator`;
-  }
+  };
 
   return (
     <Fragment>
-      <div className="flex min-h-screen flex-col ">
+      <div className="flex min-h-screen flex-col">
         <Navigationbar />
-        <main className="flex-1 bg-gradient-to-b from-emerald-50 to-white justify-center flex items-center">
-          <div className="container max-w-4xl py-12  px-4 sm:px-6 lg:px-8">
+        <main className="flex-1 bg-gradient-to-b from-emerald-50 to-white flex items-center justify-center">
+          <div className="container max-w-4xl py-12 px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h1 className="text-4xl font-extrabold tracking-tight text-emerald-800 sm:text-5xl md:text-6xl">
                 Create Your Playlist
@@ -237,7 +207,7 @@ export default function HomePage() {
                       <textarea
                         id="mood"
                         placeholder="E.g. Feeling energetic and ready to workout, need upbeat music..."
-                        className="min-h-[100px] p-4 w-full border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500"
+                        className="min-h-[100px] p-4 w-full border-emerald-300 rounded-lg focus:border-emerald-500 focus:ring-emerald-500"
                         onChange={(e) => setPrompt(e.target.value)}
                         required
                       />
@@ -252,7 +222,7 @@ export default function HomePage() {
                         </label>
                         <select
                           id="language"
-                          className="w-full border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500"
+                          className="w-full border-emerald-300 rounded-lg focus:border-emerald-500 focus:ring-emerald-500"
                           value={language}
                           onChange={(e) => setLanguage(e.target.value)}
                         >
@@ -296,24 +266,26 @@ export default function HomePage() {
                           min="5"
                           max="50"
                           defaultValue="20"
-                          className="w-full border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500"
+                          className="w-full border-emerald-300 rounded-lg focus:border-emerald-500 focus:ring-emerald-500"
                           value={songCount}
                           onChange={(e) => setSongCount(Number(e.target.value))}
                           required
                         />
                       </div>
                     </div>
+                    {error && <p className="text-red-500 text-sm">{error}</p>}
                     <button
                       type="submit"
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50"
+                      disabled={loading}
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {lodeing ? (
-                        <div className="inline-flex ">
+                      {loading ? (
+                        <div className="inline-flex items-center">
                           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                           Generating...
                         </div>
                       ) : (
-                        <div className="inline-flex ">
+                        <div className="inline-flex items-center">
                           <Music className="mr-2 h-5 w-5" />
                           Generate Playlist
                         </div>
