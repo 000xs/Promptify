@@ -25,6 +25,10 @@ export default function HomePage() {
   if (status === "loading") return <Loading />;
   if (!session?.accessToken) return <Not />;
 
+  if(session.accessToken){
+    console.log(session)
+  }
+
   // Form submission handler
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

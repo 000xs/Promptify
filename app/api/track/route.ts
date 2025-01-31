@@ -104,15 +104,22 @@ async function searchSpotifyGenres(
       console.warn("No tracks found for the given genres.");
       return []; // Return an empty array if no tracks found
     }
+    // return response.data.tracks
 
     // Return only the tracks array
-    return response.data.tracks.items.map((track: Track) => ({
-      id: track.id,
-      uri: track.uri,
-      name: track.name,
-      album: track.album.name,
-      preview_url: track.preview_url || null, // Return null if no preview URL is available
-      external_url: track.external_urls.spotify, // Spotify link to the track
+    return response.data.tracks.items.map((track: any) => ({
+      id: track?.id ?? '',
+      uri: track?.uri ?? '',
+      name: track?.name ?? 'Unknown Track',
+      album: track?.album?.name ?? 'Unknown Album',
+      preview_url: track?.preview_url ?? null,
+      external_url: track?.external_urls?.spotify ?? null,
+      artists: track?.artists?.map((artist: any) => artist?.name) ?? [],
+      duration_ms: track?.duration_ms ?? 0,
+      explicit: track?.explicit ?? false,
+      popularity: track?.popularity ?? 0,
+      release_date: track?.album?.release_date ?? '',
+      image: track?.album?.images?.[0]?.url ?? null,
     }));
     // return response.data.tracks.items;
   } catch (error) {
