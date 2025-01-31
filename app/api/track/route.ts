@@ -2,6 +2,31 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 import { availableGenres } from "@/data/data"; // Assuming this exports an array of valid genres
 
+interface SpotifyArtist {
+  name: string;
+}
+
+interface SpotifyAlbum {
+  name: string;
+  release_date: string;
+  images: Array<{ url: string }>;
+}
+
+interface SpotifyTrackResponse {
+  id: string;
+  uri: string;
+  name: string;
+  album: SpotifyAlbum;
+  preview_url: string | null;
+  external_urls: {
+    spotify: string;
+  };
+  artists: SpotifyArtist[];
+  duration_ms: number;
+  explicit: boolean;
+  popularity: number;
+}
+
 export async function POST(req: Request) {
   const accesToken = req.headers.get("Authorization"); // Access header
   if (!accesToken || typeof accesToken !== "string") {
@@ -106,20 +131,21 @@ async function searchSpotifyGenres(
     }
     // return response.data.tracks
 
-    // Return only the tracks array
-    return response.data.tracks.items.map((track: any) => ({
-      id: track?.id ?? '',
-      uri: track?.uri ?? '',
-      name: track?.name ?? 'Unknown Track',
-      album: track?.album?.name ?? 'Unknown Album',
-      preview_url: track?.preview_url ?? null,
-      external_url: track?.external_urls?.spotify ?? null,
-      artists: track?.artists?.map((artist: any) => artist?.name) ?? [],
-      duration_ms: track?.duration_ms ?? 0,
-      explicit: track?.explicit ?? false,
-      popularity: track?.popularity ?? 0,
-      release_date: track?.album?.release_date ?? '',
-      image: track?.album?.images?.[0]?.url ?? null,
+    return response.data.tracks.items.map((track: SpotifyTrackResponse) => ({
+      id: track.id,
+      uri: track.uri,
+      name: track.name,
+      album: {
+        name: track.album.name,
+      },
+      preview_url: track.preview_url,
+      external_url: track.external_urls.spotify,
+      artists: track.artists.map((artist) => artist.name),
+      duration_ms: track.duration_ms,
+      explicit: track.explicit,
+      popularity: track.popularity,
+      release_date: track.album.release_date,
+      image: track.album.images?.[0]?.url ?? null,
     }));
     // return response.data.tracks.items;
   } catch (error) {
